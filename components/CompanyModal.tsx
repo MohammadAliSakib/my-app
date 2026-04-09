@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { CompanyType } from "./CompanyCard";
-import { X } from "lucide-react";
+import { X, Loader2 } from "lucide-react";
 
 export interface CompanyFormData {
   name: string;
@@ -18,7 +18,7 @@ export default function CompanyModal({
 }: {
   company: CompanyType | null;
   onClose: () => void;
-  onSave: (data: CompanyFormData) => void;
+  onSave: (data: CompanyFormData) => Promise<void> | void;
 }) {
   const [formData, setFormData] = useState<CompanyFormData>({
     name: "",
@@ -42,9 +42,16 @@ export default function CompanyModal({
     }
   }, [company]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    onSave(formData);
+    setIsSubmitting(true);
+    try {
+      await onSave(formData);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -97,8 +104,13 @@ export default function CompanyModal({
 
              <div className="pt-4 flex justify-end gap-3 border-t mt-6">
                 <button type="button" onClick={onClose} className="px-4 py-2 border rounded font-medium text-slate-700 hover:bg-slate-50 transition">Cancel</button>
-                <button type="submit" className="px-4 py-2 bg-[#00a651] text-white rounded font-medium hover:bg-green-700 transition shadow-sm">
-                  {company ? "Save Changes" : "Add Company"}
+                <button 
+                  type="submit" 
+                  disabled={isSubmitting}
+                  className="px-4 py-2 bg-[#00a651] text-white rounded font-medium hover:bg-green-700 transition shadow-sm disabled:opacity-70 disabled:cursor-not-allowed flex items-center gap-2"
+                >
+                  {isSubmitting && <Loader2 className="w-4 h-4 animate-spin" />}
+                  {company ? (isSubmitting ? "Saving..." : "Save Changes") : (isSubmitting ? "Adding..." : "Add Company")}
                 </button>
              </div>
           </form>

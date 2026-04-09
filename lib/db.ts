@@ -1,5 +1,4 @@
 import mongoose from "mongoose";
-import { MongoMemoryServer } from "mongodb-memory-server";
 
 declare global {
   var mongoose: any;
@@ -23,22 +22,14 @@ export async function connectToDatabase() {
       bufferCommands: false,
     };
 
-    if (MONGODB_URI) {
-      console.log("Connecting to standard MongoDB...");
-      cached.promise = mongoose.connect(MONGODB_URI, opts).then((mongoose) => {
-        return mongoose;
-      });
-    } else {
-      console.log("No MONGODB_URI found. Initializing MongoDB Memory Server...");
-      cached.promise = (async () => {
-        if(!cached.mongod) {
-           cached.mongod = await MongoMemoryServer.create();
-        }
-        const uri = cached.mongod.getUri();
-        const m = await mongoose.connect(uri, opts);
-        return m;
-      })();
+    if (!MONGODB_URI) {
+      throw new Error("MONGODB_URI is not defined");
     }
+
+    console.log("Connecting to standard MongoDB...");
+    cached.promise = mongoose.connect(MONGODB_URI, opts).then((mongoose) => {
+      return mongoose;
+    });
   }
 
   try {

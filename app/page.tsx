@@ -8,7 +8,6 @@ export default function Home() {
   const [companies, setCompanies] = useState<CompanyType[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
-  const [hasSeeded, setHasSeeded] = useState(false);
 
   const fetchCompanies = async (search = "") => {
     setLoading(true);
@@ -26,25 +25,11 @@ export default function Home() {
   };
 
   useEffect(() => {
-    if (!hasSeeded) {
-      // Auto-seed for demo purposes only
-      fetch("/api/seed").then(() => {
-         setHasSeeded(true);
-         fetchCompanies();
-      }).catch(() => {
-         setHasSeeded(true);
-         fetchCompanies();
-      });
-    }
-  }, [hasSeeded]);
-
-  useEffect(() => {
-    if (!hasSeeded) return;
     const delayDebounceFn = setTimeout(() => {
       fetchCompanies(searchTerm);
     }, 300);
     return () => clearTimeout(delayDebounceFn);
-  }, [searchTerm, hasSeeded]);
+  }, [searchTerm]);
 
   return (
     <div className="min-h-screen bg-gray-50 text-gray-900 font-sans pb-20">
